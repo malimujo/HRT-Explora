@@ -76,7 +76,7 @@ console.log('📅 Datum/vrijeme:', emisijaInfo);
 
 const imageUrl = result.image || 'https://radio.hrt.hr/favicon.ico';
 const m3uContent = `#EXTM3U
-#EXTINF:-1 tvg-logo="${imageUrl}" group-title="Analiza",HRT Explora ${emisijaInfo}
+#EXTINF:-1 tvg-logo="${imageUrl},HRT Explora ${emisijaInfo}
 ${result.mp3}`;
 
 fs.writeFileSync('explora.m3u', m3uContent);

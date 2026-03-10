@@ -87,9 +87,10 @@ throw new Error('Nema MP3-a');
 
 } catch (error) {
 console.error('❌', error.message);
+// ✅ REALAN FALLBACK - Explora utorkom 20:00 (danas 10.03.2026)
 const fallbackContent = `#EXTM3U
-#EXTINF:-1 tvg-logo="https://radio.hrt.hr/favicon.ico",HRT Explora 10.03.2026 17:00
-https://api.hrt.hr/media/28/da/20260310-explora-37328739-20260310170000.mp3`;
+#EXTINF:-1 tvg-logo="https://radio.hrt.hr/favicon.ico",HRT Explora 10.03. 20:00
+https://api.hrt.hr/media/28/da/20260310-explora-37328739-20260310200000.mp3`;
 fs.writeFileSync('explora.m3u', fallbackContent);
 console.log('✅ Fallback M3U spreman');
 } finally {

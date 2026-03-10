@@ -1,7 +1,7 @@
 name: Ažuriraj Explora M3U
 on:
   schedule:
-    - cron: '*/15 7-10 * * *'  # SVAKIH 15 MIN IZMEĐU 7:00-10:00
+    - cron: '0,30 16-22 * * 2'  #UTORCI 17:00-23:30 svakih 30 min (CET = UTC+1)
   workflow_dispatch:
 
 permissions:

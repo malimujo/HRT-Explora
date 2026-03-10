@@ -42,14 +42,13 @@ async function updateExploraM3U() {
         }
       }
       
-      // 🎵 REGEX u scriptovima
+      // 🎵 FIXIRANI REGEX u scriptovima
       const scripts = Array.from(document.querySelectorAll('script'));
       for (const script of scripts) {
         const content = script.textContent || script.innerHTML;
-        const mp3Regex1 = new RegExp('"https?:\\\\\\\\\\\\/\\\\\\\\\\\\/api\\\\\\\\.hrt\\\\\\\\.hr\\\\\\\\\\\\/media[^"]*\\\\\\\\.mp3[^"]*"');
-        const mp3Regex2 = new RegExp("'https?:\\\\\\\\\\\\/\\\\\\\\\\\\/api\\\\\\\\.hrt\\\\\\\\.hr\\\\\\\\\\\\/media[^']*\\\\\\\\.mp3[^']*'");
-        const mp3Match1 = content.match(mp3Regex1);
-        const mp3Match2 = content.match(mp3Regex2);
+        // ✅ ISPRAVLJEN REGEX:
+        const mp3Match1 = content.match(/"https?:\/\/api\.hrt\.hr\/media[^"]*\.mp3[^"]*"/);
+        const mp3Match2 = content.match(/'https?:\/\/api\.hrt\.hr\/media[^']*\.mp3[^']*'/);
         if (mp3Match1) return { mp3: mp3Match1[0].slice(1, -1), image: imageUrl };
         if (mp3Match2) return { mp3: mp3Match2[0].slice(1, -1), image: imageUrl };
       }
@@ -58,68 +57,31 @@ async function updateExploraM3U() {
     });
     
     console.log('🎵 MP3 Explora:', result.mp3);
-    console.log('🖼️ Slika Explora:', result.image);
+    console.log('🖼️ Slika:', result.image);
     
     if (result.mp3) {
-      // 🆕 NAJNOVIJA EPIZODA po DATUMU
-      const webTime = await page.evaluate(() => {
-        const bodyText = document.body.innerText || document.body.textContent || '';
-        // Pronađi SVE datume/vremena
-        const timeMatches = bodyText.match(/([Pp]on|[Uu]to|[Ss]ri|[Čč]et|[Pp]et|[Ss]ub|[Nn]ed)(?:to|ak)?[,.\\s]+(\\d{1,2})[.\\s]+(\\d{1,2})[.\\s]*u[.\\s]*(\\d{1,2}):(\\d{2})/gi);
-        
-        if (timeMatches && timeMatches.length > 0) {
-          let latestTime = null;
-          let latestTimestamp = 0;
-          
-          for (const match of timeMatches) {
-            const parsed = match.match(/([Pp]on|[Uu]to|[Ss]ri|[Čč]et|[Pp]et|[Ss]ub|[Nn]ed)(?:to|ak)?[,.\\s]+(\\d{1,2})[.\\s]+(\\d{1,2})[.\\s]*u[.\\s]*(\\d{1,2}):(\\d{2})/i);
-            if (parsed && parsed[2] && parsed[3] && parsed[4] && parsed[5]) {
-              const dan = parseInt(parsed[2], 10);
-              const mjesec = parseInt(parsed[3], 10) - 1;
-              const sat = parseInt(parsed[4], 10);
-              const minuta = parseInt(parsed[5], 10);
-              
-              const datum = new Date(2026, mjesec, dan, sat, minuta);
-              const timestamp = datum.getTime();
-              
-              if (timestamp > latestTimestamp) {
-                latestTimestamp = timestamp;
-                latestTime = match.trim();
-              }
-            }
-          }
-          
-          return latestTime || null;
-        }
-        return null;
-      });
-      
-      const timeMatch = result.mp3.match(/(\\d{4})(\\d{2})(\\d{2})(\\d{6})\\.mp3$/);
+      const timeMatch = result.mp3.match(/(\d{4})(\d{2})(\d{2})(\d{6})\.mp3$/);
       let emisijaInfo = 'Najnovija';
       
-      if (webTime) {
-        emisijaInfo = webTime;
-        console.log('🕐 Web vrijeme Explora (najnovije):', webTime);
-      } else if (timeMatch) {
+      if (timeMatch) {
         const godina = timeMatch[1];
         const mjesec = timeMatch[2];
         const dan = timeMatch[3];
         const vrijeme = timeMatch[4];
         const sat = vrijeme.slice(0,2);
         const minute = vrijeme.slice(2,4);
-        emisijaInfo = `${dan}.${mjesec}.${sat}:${minute}`;
-        console.log('📅 Iz MP3 Explora:', emisijaInfo);
+        emisijaInfo = `${dan}.${mjesec}.${sat}:${minute}.`;
       }
       
-      console.log('📅 Konačno datum/vrijeme Explora:', emisijaInfo);
+      console.log('📅 Datum/vrijeme Explora:', emisijaInfo);
       
       const imageUrl = result.image || 'https://radio.hrt.hr/favicon.ico';
       const m3uContent = `#EXTM3U
 #EXTINF:-1 tvg-logo="${imageUrl}" group-title="Analiza",HRT Explora ${emisijaInfo}
 ${result.mp3}`;
 
-      fs.writeFileSync('Explora.m3u', m3uContent);
-      console.log('✅ Explora.m3u spreman s ikonom i vremenom!');
+      fs.writeFileSync('explora.m3u', m3uContent);
+      console.log('✅ Explora M3U spreman s ikonom!');
     } else {
       throw new Error('Nema MP3-a');
     }
@@ -127,10 +89,10 @@ ${result.mp3}`;
   } catch (error) {
     console.error('❌ Explora greška:', error.message);
     const fallbackContent = `#EXTM3U
-#EXTINF:-1 tvg-logo="https://radio.hrt.hr/favicon.ico",HRT Explora Uto, 10.03. u 20:00
-https://api.hrt.hr/media/28/da/20260310-explora-37328739-20260310200000.mp3`;
-    fs.writeFileSync('Explora.m3u', fallbackContent);
-    console.log('✅ Fallback Explora.m3u spreman');
+#EXTINF:-1 tvg-logo="https://radio.hrt.hr/favicon.ico",HRT Explora 10.03.2026 17:00
+https://api.hrt.hr/media/28/da/20260310-explora-37328739-20260310170000.mp3`;
+    fs.writeFileSync('explora.m3u', fallbackContent);
+    console.log('✅ Fallback Explora M3U spreman');
   } finally {
     if (browser) {
       await browser.close();

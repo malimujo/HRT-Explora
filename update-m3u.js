@@ -91,7 +91,7 @@ console.error('❌', error.message);
 const fallbackContent = `#EXTM3U
 #EXTINF:-1 tvg-logo="https://radio.hrt.hr/favicon.ico",HRT Explora 10.03. 20:00
 https://api.hrt.hr/media/28/da/20260310-explora-37328739-20260310200000.mp3`;
-fs.writeFileSync('explora.m3u', fallbackContent);
+fs.writeFileSync('Explora.m3u', fallbackContent);
 console.log('✅ Fallback M3U spreman');
 } finally {
 if (browser) {
